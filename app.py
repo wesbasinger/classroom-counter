@@ -1,12 +1,10 @@
 from __future__ import print_function 
 import httplib2
 
-import pprint
 from apiclient import discovery
 
 from auth import get_credentials
-
-from datetime import datetime
+from counter import tally
 
 from Adafruit_LED_Backpack import SevenSegment
 
@@ -15,6 +13,8 @@ display = SevenSegment.SevenSegment()
 display.begin()
 
 colon = False
+
+courses = [1644100493, 1644278098]
 
 def main():
 
@@ -29,41 +29,17 @@ def main():
 	print("Application is now running...")
 
 	while True:
-		result = service.courses().courseWork().studentSubmissions().list( 
-			courseId=1644278098,  
-			courseWorkId='-',
-			fields='studentSubmissions(updateTime,state)'
-			).execute()
 
-		utcnow = datetime.utcnow()
+		combined_count = 0
 
-		today = datetime(utcnow.year, utcnow.month, utcnow.day)
+		for course in courses:
 
-		counter = 0
-
-		for submission in result['studentSubmissions']:
-
-			year = int(submission['updateTime'][0:4])
-
-			month = int(submission['updateTime'][5:7])
-
-			day = int(submission['updateTime'][8:10])
-
-			hour = int(submission['updateTime'][11:13])
-
-			minute = int(submission['updateTime'][14:16])
-
-			subtime = datetime(year, month, day, hour, minute)
-
-			if ((subtime > today) and 
-			(submission['state'] == "RETURNED" or
-			 submission['state'] == "TURNED_IN")):
-				counter += 1
+			combined_count += tally(service, course)
 
 		display.clear()
 
 		display.print_number_str(
-			str(counter)
+			str(combined_count)
 		)
 
 		display.write_display()
