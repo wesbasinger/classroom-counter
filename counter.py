@@ -1,20 +1,23 @@
-from __future__ import print_function 
-
 from datetime import datetime
 
-def tally(service, course_id):
+def tally(service, course_id, assignment_dict):
 
-	result = service.courses().courseWork().studentSubmissions().list( 
-		courseId=course_id,  
-		courseWorkId='-',
-		fields='studentSubmissions(updateTime,state)'
-		).execute()
+	try:
+
+		result = service.courses().courseWork().studentSubmissions().list(
+			courseId=course_id,
+			courseWorkId='-',
+			pageSize=20
+			).execute()
+
+	except:
+
+		# let HTTP 404 errors pass silently
+		pass
 
 	utcnow = datetime.utcnow()
 
 	today = datetime(utcnow.year, utcnow.month, utcnow.day)
-
-	counter = 0
 
 	for submission in result['studentSubmissions']:
 
@@ -30,9 +33,16 @@ def tally(service, course_id):
 
 		subtime = datetime(year, month, day, hour, minute)
 
-		if ((subtime > today) and 
+		if ((subtime > today) and
 		(submission['state'] == "RETURNED" or
 		 submission['state'] == "TURNED_IN")):
-			counter += 1
 
-	return counter
+			try:
+
+				assignment_dict[submission['id']] = submission['state']
+
+			except KeyError:
+
+				assignment_dict[submission['id']] = submission['state']
+
+	return len(assignment_dict)
