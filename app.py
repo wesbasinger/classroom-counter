@@ -7,13 +7,13 @@ from apiclient import discovery
 from auth import get_credentials
 from counter import tally
 
-#from Adafruit_LED_Backpack import SevenSegment
-#from gpiozero import Buzzer
+from Adafruit_LED_Backpack import SevenSegment
+from gpiozero import Buzzer
 
-#display = SevenSegment.SevenSegment()
-#buzzer = Buzzer(17)
+display = SevenSegment.SevenSegment()
+buzzer = Buzzer(17)
 
-#display.begin()
+display.begin()
 
 colon = False
 
@@ -45,9 +45,16 @@ def main():
 
 	while True:
 
+
+		sleep(1)
+
+		print("Pre check assignment dict", assignment_dict)
+
 		for course in courses:
 
 			count = tally(service, course, assignment_dict)
+
+			print("Post check assignment dict", assignment_dict)
 
 		if count != global_count:
 
@@ -59,7 +66,7 @@ def main():
 		display.clear()
 
 		display.print_number_str(
-			str(combined_count)
+			str(global_count)
 		)
 
 		display.write_display()
